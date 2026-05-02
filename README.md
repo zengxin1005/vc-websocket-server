@@ -17,7 +17,7 @@ void CServerDlg::OnClose() {
     StopWebSocketServer();
 }
 
-=======================================================================================
+//HTTP SERVER
 // 自定义请求处理函数
 BOOL MyHttpHandler(const char* uri, const char* method, const char* body, 
                    char** response, size_t* response_len) {
