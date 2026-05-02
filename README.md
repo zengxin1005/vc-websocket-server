@@ -16,3 +16,43 @@ BOOL CServerDlg::OnInitDialog() {
 void CServerDlg::OnClose() {
     StopWebSocketServer();
 }
+
+=======================================================================================
+// 自定义请求处理函数
+BOOL MyHttpHandler(const char* uri, const char* method, const char* body, 
+                   char** response, size_t* response_len) {
+    // 只处理 POST /api/login
+    if (strcmp(uri, "/api/login") == 0 && strcmp(method, "POST") == 0) {
+        // 解析 body 中的参数 (例如 "username=abc&password=123")
+        char username[64] = {0}, password[64] = {0};
+        mg_get_http_var((const struct mg_str*)body, "username", username, sizeof(username));
+        mg_get_http_var((const struct mg_str*)body, "password", password, sizeof(password));
+        
+        // 业务逻辑...
+        const char* result = "{\"code\":0,\"msg\":\"success\"}";
+        *response_len = strlen(result);
+        *response = (char*)malloc(*response_len + 1);
+        strcpy(*response, result);
+        return TRUE;
+    }
+    // 处理其他API...
+    return FALSE; // 未处理，将由静态文件服务处理
+}
+
+BOOL CServerDlg::OnInitDialog() {
+
+    // 启动 HTTP 服务器（端口 8080，文档根目录为当前 exe 所在目录下的 web 文件夹）
+    if (StartHttpServer(8080, "./web")) {
+        SetHttpHandler(MyHttpHandler);
+        PrintText("HTTP server started on port 8080");
+    } else {
+        PrintText("HTTP server failed to start");
+    }
+
+    return TRUE;
+}
+
+void CServerDlg::OnClose() {
+   StopHttpServer();
+}
+
